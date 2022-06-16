@@ -39,6 +39,8 @@ find-kelp
     Options:
       --species / --presence  Segment to species or presence/absence level.
                               [default: presence]
+      --aco / --rpas          Use ACO or RPAS imagery optimized model.  [default:
+                              rpas]
       --crop-size INTEGER     The size for the cropped image squares run through
                               the segmentation model.  [default: 256]
       --padding INTEGER       The number of context pixels added to each side of
