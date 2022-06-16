@@ -2,8 +2,8 @@ from abc import ABC, ABCMeta, abstractmethod
 
 import torch
 
-from hakai_segmentation.data import lraspp_kelp_presence_torchscript_path, lraspp_kelp_species_torchscript_path,\
-    lraspp_mussel_presence_torchscript_path
+from hakai_segmentation.data import (lraspp_kelp_presence_aco_torchscript_path, lraspp_kelp_presence_torchscript_path,
+                                     lraspp_kelp_species_torchscript_path, lraspp_mussel_presence_torchscript_path)
 
 
 class _Model(ABC):
@@ -35,8 +35,14 @@ class _JITModel(_Model, metaclass=ABCMeta):
 class KelpPresenceSegmentationModel(_JITModel):
     torchscript_path = lraspp_kelp_presence_torchscript_path
 
+
+class KelpPresenceACOSegmentationModel(_JITModel):
+    torchscript_path = lraspp_kelp_presence_aco_torchscript_path
+
+
 class KelpSpeciesSegmentationModel(_JITModel):
     torchscript_path = lraspp_kelp_species_torchscript_path
+
 
 class MusselPresenceSegmentationModel(_JITModel):
     torchscript_path = lraspp_mussel_presence_torchscript_path

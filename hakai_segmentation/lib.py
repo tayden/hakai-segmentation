@@ -1,21 +1,26 @@
 from hakai_segmentation.managers import GeotiffSegmentation
-from hakai_segmentation.models import KelpPresenceSegmentationModel, KelpSpeciesSegmentationModel, \
-    MusselPresenceSegmentationModel
+from hakai_segmentation.models import (KelpPresenceACOSegmentationModel, KelpPresenceSegmentationModel,
+                                       KelpSpeciesSegmentationModel, MusselPresenceSegmentationModel)
 
 
-def find_kelp(source: str, dest: str, species: bool = False,
+def find_kelp(source: str, dest: str, species: bool = False, aco: bool = False,
               crop_size: int = 256, padding: int = 128, batch_size: int = 2, use_gpu: bool = True):
     """Detect kelp in image at path `source` and output the resulting classification raster to file at path `dest`.
 
     :param source: Input image with Byte data type.
     :param dest: File path location to save output to.
     :param species: Do species classification instead of presence/absence.
+    :param aco: Use ACO or RPAS imagery optimized model.
     :param crop_size: The size of cropped image square run through the segmentation model.
     :param padding: The number of context pixels added to each side of the cropped image squares.
     :param batch_size: The batch size of cropped image sections to process together.
     :param use_gpu: Disable Cuda GPU usage and run on CPU only.
     """
-    if species:
+    if aco and species:
+        raise NotImplementedError("ACO optimized model not yet available for species segmentation.")
+    elif aco:
+        model = KelpPresenceACOSegmentationModel(use_gpu=use_gpu)
+    elif species:
         model = KelpSpeciesSegmentationModel(use_gpu=use_gpu)
     else:
         model = KelpPresenceSegmentationModel(use_gpu=use_gpu)
