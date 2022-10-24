@@ -1,49 +1,41 @@
 import gc
+from pathlib import Path
+from typing import Optional, Union
+
 import torch
-from abc import ABC, ABCMeta, abstractmethod
 
-from hakai_segmentation.data import lraspp_kelp_presence_torchscript_path, lraspp_kelp_species_torchscript_path,\
-    lraspp_mussel_presence_torchscript_path
+from hakai_segmentation.types import ModelTypeT
+from hakai_segmentation.weights import get_model_weights
 
 
-class _Model(ABC):
-    def __init__(self, use_gpu: bool = True):
-        self.device = torch.device('cuda') if torch.cuda.is_available() and use_gpu else torch.device('cpu')
-        self.model = self.load_model()
+class SegmentationModel(object):
+    def __init__(
+        self,
+        model_type: ModelTypeT,
+        weights_version: Optional[str] = None,
+        use_gpu: bool = True,
+    ):
+        self.device = (
+            torch.device("cuda")
+            if torch.cuda.is_available() and use_gpu
+            else torch.device("cpu")
+        )
+        self.model_type = model_type
 
-    @abstractmethod
-    def load_model(self) -> 'torch.nn.Module':
-        raise NotImplementedError
+        self.weights = get_model_weights(model_type, weights_version)
+        self.weights.download_if_missing()
+        self.model = self.load_model(self.weights.path)
+
+    def load_model(self, model_weights: Union[Path, str]) -> "torch.nn.Module":
+        model = torch.jit.load(model_weights, map_location=self.device)
+        model.eval()
+        return model
 
     def reload(self):
         del self.model
         gc.collect()
         self.model = self.load_model()
 
-    def __call__(self, batch: 'torch.Tensor') -> 'torch.Tensor':
+    def __call__(self, batch: "torch.Tensor") -> "torch.Tensor":
         with torch.no_grad():
             return self.model.forward(batch.to(self.device))
-
-
-class _JITModel(_Model, metaclass=ABCMeta):
-    @property
-    @abstractmethod
-    def torchscript_path(self):
-        raise NotImplementedError
-
-    def load_model(self) -> 'torch.nn.Module':
-        model = torch.jit.load(self.torchscript_path, map_location=self.device)
-        model.eval()
-        return model
-
-
-class KelpPresenceSegmentationModel(_JITModel):
-    torchscript_path = lraspp_kelp_presence_torchscript_path
-
-
-class KelpSpeciesSegmentationModel(_JITModel):
-    torchscript_path = lraspp_kelp_species_torchscript_path
-
-
-class MusselPresenceSegmentationModel(_JITModel):
-    torchscript_path = lraspp_mussel_presence_torchscript_path
