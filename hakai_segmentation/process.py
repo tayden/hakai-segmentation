@@ -10,14 +10,14 @@ from torchvision import transforms
 from tqdm.auto import tqdm
 
 from hakai_segmentation.geotiff_io import GeotiffReader, GeotiffWriter
-from hakai_segmentation.models import _Model
+from hakai_segmentation.models import SegmentationModel
 
 
 class GeotiffSegmentation:
     """Class for configuring data io and efficient segmentation of Geotiff imagery."""
 
-    def __init__(self, model: '_Model', input_path: Union[str, 'Path'], output_path: Union[str, 'Path'], crop_size: int = 256,
-                 padding: int = 128, batch_size: int = 2):
+    def __init__(self, model: 'SegmentationModel', input_path: Union[str, 'Path'], output_path: Union[str, 'Path'],
+                 crop_size: int = 256, padding: int = 128, batch_size: int = 2):
         """
         Create the segmentation object.
 
