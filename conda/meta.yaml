@@ -22,9 +22,12 @@ requirements:
     - pip
   run:
     - python ~=3.7,<3.10
+    - boto3 ~=1.24
+    - botocore ~=1.27
     - numpy ~=1.16
     - pytorch ~=1.10
     - rasterio ~=1.2
+    - rich ~=12.6
     - torchvision ~=0.11
     - tqdm ~=4.62
     - typer ~=0.4

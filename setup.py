@@ -15,12 +15,15 @@ package_data = {
 }
 
 install_requires = [
-    'typer~=0.4',
+    'boto3~=1.24',
+    'botocore~=1.27',
     'numpy~=1.16',
-    'torch~=1.10',
     'rasterio~=1.2',
+    'rich~=12.6',
     'torchvision~=0.11',
-    'tqdm~=4.62'
+    'torch~=1.10',
+    'tqdm~=4.62',
+    'typer~=0.4',
 ]
 
 entry_points = {
