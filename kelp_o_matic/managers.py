@@ -2,13 +2,13 @@ import warnings
 from pathlib import Path
 from typing import Union
 
+import numpy as np
 import rasterio
-import torch
 from rich import print
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
 
 from kelp_o_matic.geotiff_io import GeotiffReader, GeotiffWriter
-from kelp_o_matic.hann import TorchMemoryRegister, BartlettHannKernel
+from kelp_o_matic.hann import NumpyMemoryRegister, BartlettHannKernel
 from kelp_o_matic.models import _Model
 from kelp_o_matic.utils import all_same
 
@@ -54,9 +54,9 @@ class GeotiffSegmentationManager:
             dtype="uint8",
             nodata=0,
         )
-        self.kernel = BartlettHannKernel(crop_size, self.model.device)
-        self.register = TorchMemoryRegister(
-            self.input_path, self.model.register_depth, crop_size, self.model.device
+        self.kernel = BartlettHannKernel(crop_size)
+        self.register = NumpyMemoryRegister(
+            self.input_path, self.model.register_depth, crop_size
         )
 
     def __call__(self):
@@ -74,17 +74,17 @@ class GeotiffSegmentationManager:
                 if self.model.transform:
                     crop = self.model.transform(crop / self._max_value)
 
-                if torch.all(crop == 0):
+                if np.all(crop == 0):
                     logits = self.model.shortcut(self.reader.crop_size)
                 else:
                     # Zero pad to correct shape
-                    _, h, w = crop.shape
-                    crop = torch.nn.functional.pad(
-                        crop, (0, self.crop_size - w, 0, self.crop_size - h), value=0
-                    )
-                    logits = self.model(crop.unsqueeze(0))[0]
+                    c, h, w = crop.shape
+                    zeros = np.zeros((c, self.crop_size, self.crop_size), dtype=crop.dtype)
+                    zeros[:, :h, :w] = crop
+                    crop = zeros
+                    logits = self.model(np.expand_dims(crop,0))[0]
 
-                logits = self.kernel(
+                logits = self.kernel.forward(
                     logits,
                     top=self.reader.is_top_window(read_window),
                     bottom=self.reader.is_bottom_window(read_window),
@@ -197,10 +197,6 @@ class RichSegmentationManager(GeotiffSegmentationManager):
     def __call__(self):
         with self.progress:
             super().__call__()
-
-    def on_start(self):
-        device_emoji = ":rocket:" if self.model.device.type == "cuda" else ":snail:"
-        print(f"Running with [magenta]{self.model.device} {device_emoji}")
 
     def on_tile_write(self, index: int):
         self.progress.update(self.processing_task, completed=index)

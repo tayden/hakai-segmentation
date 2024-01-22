@@ -5,7 +5,7 @@ from pathlib import Path
 
 from rich.progress import Progress
 
-S3_BUCKET = "https://kelp-o-matic.s3.amazonaws.com/pt_jit"
+S3_BUCKET = "https://kelp-o-matic.s3.amazonaws.com/onnx"
 CACHE_DIR = Path("~/.cache/kelp_o_matic").expanduser()
 
 
