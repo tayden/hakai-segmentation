@@ -145,7 +145,7 @@ class NumpyMemoryRegister(object):
 
         # write bd
         col_off_bd = img_window.col_off + self.hws
-        self.register[:, :, col_off_bd: col_off_bd + self.hws] = logits_bd
+        self.register[:, :, col_off_bd : col_off_bd + (self.ws - self.hws)] = logits_bd
 
         # Return the information-complete predictions
         preds_win = Window(
