@@ -131,3 +131,16 @@ class KelpRGBISpeciesSegmentationModel(_SpeciesSegmentationModel):
     @staticmethod
     def transform(x: Union[np.ndarray, Image]) -> torch.Tensor:
         return _unet_efficientnet_b4_transform(x)
+
+
+class SeagrassPresenceSegmentationModel(_Model):
+    register_depth = 1
+
+    torchscript_path = (
+        "UNetPlusPlus_EfficientNetB5_seagrass_presence_rgb_jit_dice=0.8498.pt"
+    )
+
+    def post_process(self, x: "torch.Tensor") -> "np.ndarray":
+        with torch.no_grad():
+            label = torch.sigmoid(x) > 0.5  # 0: bg, 1: eelgrass
+        return label.squeeze(0).detach().cpu().numpy().astype(np.uint8)

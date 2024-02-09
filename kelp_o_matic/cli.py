@@ -7,6 +7,7 @@ from kelp_o_matic import (
     __version__,
     find_kelp as find_kelp_,
     find_mussels as find_mussels_,
+    find_eelgrass as find_eelgrass_,
 )
 
 cli = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]})
@@ -82,6 +83,37 @@ def find_mussels(
     raster to file at path DEST.
     """
     find_mussels_(source, dest, crop_size, band_order, use_gpu, use_tta)
+
+
+@cli.command()
+def find_eelgrass(
+    source: Path = typer.Argument(..., help="Input image with Byte data type."),
+    dest: Path = typer.Argument(..., help="File path location to save output to."),
+    crop_size: int = typer.Option(
+        1024,
+        help="The data window size to run through the segmentation model.",
+    ),
+    band_order: Optional[list[int]] = typer.Option(
+        None,
+        "-b",
+        help="GDAL-style band re-ordering flag. Defaults to RGB order. "
+        "To e.g., reorder a BGR image at runtime, pass flags `-b 3 -b 2 -b 1`.",
+    ),
+    use_gpu: bool = typer.Option(
+        True, "--gpu/--no-gpu", help="Enable or disable GPU, if available."
+    ),
+    use_tta: bool = typer.Option(
+        False,
+        "--tta/--no-tta",
+        help="Use test time augmentation to improve accuracy at the cost of "
+        "processing time.",
+    ),
+):
+    """
+    Detect eelgrass in image at path SOURCE and output the resulting classification
+    raster to file at path DEST.
+    """
+    find_eelgrass_(source, dest, crop_size, band_order, use_gpu, use_tta)
 
 
 def version_callback(value: bool) -> None:

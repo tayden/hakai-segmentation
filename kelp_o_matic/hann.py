@@ -165,6 +165,6 @@ class TorchMemoryRegister(object):
             height=min(self.hws, img_window.height),
             width=min(self.hws, img_window.width),
         )
-        preds = logits_a[:, : img_window.height, : img_window.width].softmax(axis=0)
+        preds = logits_a[:, : img_window.height, : img_window.width]
 
         return preds, preds_win

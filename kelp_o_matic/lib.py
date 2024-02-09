@@ -11,6 +11,7 @@ from kelp_o_matic.models import (
     MusselRGBPresenceSegmentationModel,
     KelpRGBIPresenceSegmentationModel,
     KelpRGBISpeciesSegmentationModel,
+    SeagrassPresenceSegmentationModel,
 )
 
 
@@ -142,6 +143,43 @@ def find_mussels(
     _validate_band_order(band_order)
     _validate_paths(Path(source), Path(dest))
     model = MusselRGBPresenceSegmentationModel(use_gpu=use_gpu)
+    RichSegmentationManager(
+        model,
+        Path(source),
+        Path(dest),
+        band_order=band_order,
+        crop_size=crop_size,
+        test_time_augmentation=test_time_augmentation,
+    )()
+
+
+def find_eelgrass(
+    source: Union[str, Path],
+    dest: Union[str, Path],
+    crop_size: int = 1024,
+    band_order: Optional[list[int]] = None,
+    use_gpu: bool = True,
+    test_time_augmentation: bool = False,
+):
+    """
+    Detect eelgrass in image at path `source` and output the resulting classification
+    raster to file at path `dest`.
+
+    Args:
+        source: Input image with Byte data type.
+        dest: File path location to save output to.
+        crop_size: The size of cropped image square run through the segmentation model.
+        band_order: GDAL-style band re-ordering flag. Defaults to RGB order.
+            e.g. to reorder a BGR image at runtime, pass `[3,2,1]`.
+        use_gpu: Disable Cuda GPU usage and run on CPU only.
+        test_time_augmentation: Use test time augmentation to improve model accuracy.
+    """
+    if not band_order:
+        band_order = [1, 2, 3]
+
+    _validate_band_order(band_order)
+    _validate_paths(Path(source), Path(dest))
+    model = SeagrassPresenceSegmentationModel(use_gpu=use_gpu)
     RichSegmentationManager(
         model,
         Path(source),
