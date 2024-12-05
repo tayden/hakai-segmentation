@@ -52,21 +52,18 @@ jobs:
           channel-priority: true
           auto-update-conda: true
           activate-environment: my-env
-          miniforge-variant: Mambaforge
-          use-mamba: true
 
       - name: Install build packages
-        run: mamba install -y boa anaconda-client
+        run: mamba install -y rattler-build anaconda-client conda-verify
 
       - name: Build package
         run: |
-          cd conda
-          conda mambabuild --output-folder . .
+          rattler-build build -r conda/recipe.yaml
 
       - name: Publish package
         if: inputs.should-upload
         env:
           ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
         run: |
-          cd conda
+          cd output
           anaconda upload --label main noarch/*.tar.bz2
